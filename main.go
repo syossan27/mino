@@ -1,9 +1,7 @@
 package main
 
 import (
-	"github.com/k0kubun/pp"
 	"github.com/mitchellh/go-homedir"
-	"fmt"
 )
 
 var (
@@ -13,8 +11,6 @@ var (
 func main() {
 	// 設定ファイル読み込み
 	config := NewConfig()
-
-	pp.Println(config)
 
 	h := History{
 		ShellType: config.ShellType,
@@ -28,11 +24,14 @@ func main() {
 		// historyファイルの読み込みが大前提なので、exitさせる
 		panic("historyファイルの読み込み失敗")
 	}
-	for _, v := range commandHistory {
-		fmt.Println(v)
+
+	var reverseCommandHistory []string
+	for i := len(commandHistory) - 1; i > 0; i-- {
+		command := commandHistory[i]
+		reverseCommandHistory = append(reverseCommandHistory, command)
 	}
 
 	t := NewTermbox()
 	t.Init()
-	t.Do()
+	t.Do(reverseCommandHistory)
 }
