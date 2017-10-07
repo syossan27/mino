@@ -53,24 +53,36 @@ func (t *Termbox) Draw(commandHistory []string) {
 	tso := strconv.Itoa(t.Selection.Offset)
 	tbo := strconv.Itoa(t.Buffer.Offset)
 	th := strconv.Itoa(t.Height)
-	t.Tbprint(0, 0, termbox.ColorWhite, termbox.ColorDefault, "Selection Offset: " + tso + ", Buffer Offset: " + tbo + ", Terminal Height: " + th)
+	t.Print(0, 0, termbox.ColorWhite, termbox.ColorDefault, "Selection Offset: " + tso + ", Buffer Offset: " + tbo + ", Terminal Height: " + th)
 
 	for i := t.Buffer.Offset; i < len(commandHistory); i++ {
 		command := commandHistory[i]
 		if y + t.Buffer.Offset == t.Selection.Offset {
-			t.Tbprint(0, y, termbox.ColorWhite, termbox.ColorMagenta, command)
+			t.PrintSelection(0, y, termbox.ColorWhite | termbox.AttrUnderline, termbox.ColorMagenta, command)
 		} else {
-			t.Tbprint(0, y, termbox.ColorWhite, termbox.ColorDefault, command)
+			t.Print(0, y, termbox.ColorWhite, termbox.ColorDefault, command)
 		}
 		y++
 	}
 	termbox.Flush()
 }
 
-func (t *Termbox) Tbprint(x, y int, fg, bg termbox.Attribute, msg string) {
+func (t *Termbox) Print(x, y int, fg, bg termbox.Attribute, msg string) {
 	for _, c := range msg {
 		termbox.SetCell(x, y, c, fg, bg)
 		x++
+	}
+}
+
+func (t *Termbox) PrintSelection(x, y int, fg, bg termbox.Attribute, msg string) {
+	for _, c := range msg {
+		termbox.SetCell(x, y, c, fg, bg)
+		x++
+	}
+
+	// 横幅いっぱいに選択状態の背景色を表示する
+	for ; x < t.Width; x++ {
+		termbox.SetCell(x, y, ' ', fg, bg)
 	}
 }
 
