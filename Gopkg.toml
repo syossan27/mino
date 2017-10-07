@@ -24,3 +24,11 @@
 [[constraint]]
   branch = "master"
   name = "github.com/nsf/termbox-go"
+
+[[constraint]]
+  name = "github.com/BurntSushi/toml"
+  version = "0.3.0"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/mitchellh/go-homedir"

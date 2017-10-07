@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/nsf/termbox-go"
 	"fmt"
+	"github.com/nsf/termbox-go"
 )
 
 const coldef = termbox.ColorDefault
@@ -12,9 +12,7 @@ var (
 	curev termbox.Event
 )
 
-type (
-	Termbox struct {}
-)
+type Termbox struct {}
 
 func NewTermbox() *Termbox {
 	return &Termbox{}
