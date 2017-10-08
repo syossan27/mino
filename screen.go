@@ -16,7 +16,9 @@ var (
 	color = map[string]termbox.Attribute {
 		"default": termbox.ColorDefault,
 		"white": termbox.ColorWhite,
+		"black": termbox.ColorBlack,
 		"magenta": termbox.ColorMagenta,
+		"cyan": termbox.ColorCyan,
 	}
 
 	attr = map[string]termbox.Attribute {
@@ -28,6 +30,8 @@ var (
 		"bg": color["default"],
 		"selectionFg": color["white"] | attr["underline"],
 		"selectionBg": color["magenta"],
+		"selectedFg": color["black"],
+		"selectedBg": color["cyan"],
 	}
 )
 
@@ -66,8 +70,8 @@ func (t *Termbox) Draw(commandHistory []string) {
 	tso := strconv.Itoa(t.Selection.Offset)
 	tbo := strconv.Itoa(t.Buffer.Offset)
 	th := strconv.Itoa(t.Height)
-	bcy := strconv.Itoa(buffer.commandY)
-	t.Print(0, 0, color["white"], color["default"], "Selection Offset: " + tso + ", Buffer Offset: " + tbo + ", Terminal Height: " + th + ", Command Y: " + bcy)
+	lens := strconv.Itoa(len(selection.Selected))
+	t.Print(0, 0, color["white"], color["default"], "Selection Offset: " + tso + ", Buffer Offset: " + tbo + ", Terminal Height: " + th + ", len(s.Selected): " + lens)
 
 	// コマンド履歴表示開始位置から順にコマンド履歴を表示する
 	// indexはコマンド履歴配列の添字, buffer.Offsetを初期値とする
@@ -76,13 +80,29 @@ func (t *Termbox) Draw(commandHistory []string) {
 	// commandIndexはコマンド全体
 	for i := buffer.Offset; i < len(commandHistory); i++ {
 		command := commandHistory[i]
+		// これの名前変えたい
 		commandIndex := buffer.commandY + buffer.Offset
 
-		if commandIndex == selection.Offset {
-			t.PrintSelection(0, buffer.commandY, style["selectionFg"], style["selectionBg"], command)
+		// 選択済みかどうか
+		selectedNumber := ""
+		number, exist := selection.GetSelectedIndex(commandIndex)
+		if exist {
+			selectedNumber = strconv.Itoa(number) + ": "
+
+			// 要リファクタリング
+			if commandIndex == selection.Offset {
+				t.PrintSelection(0, buffer.commandY, style["selectionFg"], style["selectionBg"], selectedNumber + command)
+			} else {
+				t.PrintSelection(0, buffer.commandY, style["selectedFg"], style["selectedBg"], selectedNumber + command)
+			}
 		} else {
-			t.Print(0, buffer.commandY, style["fg"], style["bg"], command)
+			if commandIndex == selection.Offset {
+				t.PrintSelection(0, buffer.commandY, style["selectionFg"], style["selectionBg"], command)
+			} else {
+				t.Print(0, buffer.commandY, style["fg"], style["bg"], command)
+			}
 		}
+
 		buffer.commandY++
 	}
 	termbox.Flush()
@@ -138,6 +158,8 @@ mainloop:
 				break mainloop
 			case termbox.KeyEsc:
 				break mainloop
+			case termbox.KeySpace:
+				t.Selection.Select(commandHistory)
 			}
 		}
 
