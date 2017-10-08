@@ -160,6 +160,8 @@ mainloop:
 				break mainloop
 			case termbox.KeySpace:
 				t.Selection.Select(commandHistory)
+			case termbox.KeyCtrlD:
+				t.Selection.ClearSelected()
 			}
 		}
 

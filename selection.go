@@ -62,7 +62,7 @@ func (s *Selection) GetSelectedIndex(commandIndex int) (int, bool) {
 func (s *Selection) DeleteIfExistSelected() bool {
 	selectedIndex, exist := s.IsSelected()
 	if exist {
-		s.Selected = del(s.Selected, selectedIndex)
+		s.Selected = deleteSelected(s.Selected, selectedIndex)
 		s.ReNumbering(selectedIndex)
 		s.currentSelectedNumber--
 		return true
@@ -81,11 +81,15 @@ func (s *Selection) IsSelected() (int, bool) {
 	return 0, false
 }
 
-// 良い感じに名前変える
-func del(a []Info, i int) []Info {
+func deleteSelected(a []Info, i int) []Info {
 	copy(a[i:], a[i+1:])
 	a = a[:len(a)-1]
 	return a
+}
+
+func (s *Selection) ClearSelected() {
+	s.Selected = []Info{}
+	s.currentSelectedNumber = initCurrentSelectedNumber
 }
 
 // InfoのNumberを再採番
