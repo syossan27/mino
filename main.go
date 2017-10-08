@@ -12,6 +12,7 @@ func main() {
 	// 設定ファイル読み込み
 	config := NewConfig()
 
+	// History構造体を生成
 	h := History{
 		ShellType: config.ShellType,
 		HistoryFilePath: config.HistoryFilePath,
@@ -25,13 +26,11 @@ func main() {
 		panic("historyファイルの読み込み失敗")
 	}
 
-	var reverseCommandHistory []string
-	for i := len(commandHistory) - 1; i > 0; i-- {
-		command := commandHistory[i]
-		reverseCommandHistory = append(reverseCommandHistory, command)
-	}
-
+	// Termboxの表示
 	t := NewTermbox()
-	t.Init()
-	t.Do(reverseCommandHistory)
+	err = t.Init()
+	if err != nil {
+		panic("termboxのinitializeに失敗")
+	}
+	t.Do(commandHistory)
 }

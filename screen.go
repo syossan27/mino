@@ -12,22 +12,32 @@ type Termbox struct {
 	Buffer
 }
 
-type Selection struct {
-	Offset int
-}
+var (
+	color = map[string]termbox.Attribute {
+		"default": termbox.ColorDefault,
+		"white": termbox.ColorWhite,
+		"magenta": termbox.ColorMagenta,
+	}
 
-type Buffer struct {
-	Offset int
-}
+	attr = map[string]termbox.Attribute {
+		"underline": termbox.AttrUnderline,
+	}
+
+	style = map[string]termbox.Attribute {
+		"fg": color["white"],
+		"bg": color["default"],
+		"selectionFg": color["white"] | attr["underline"],
+		"selectionBg": color["magenta"],
+	}
+)
 
 func NewTermbox() *Termbox {
+	s := NewSelection()
+	b := NewBuffer()
+
 	return &Termbox{
-		Selection: Selection {
-			Offset: 1,
-		},
-		Buffer: Buffer {
-			Offset: 0,
-		},
+		Selection: s,
+		Buffer: b,
 	}
 }
 
@@ -47,24 +57,36 @@ func (t *Termbox) SetSize() {
 }
 
 func (t *Termbox) Draw(commandHistory []string) {
-	y := 1
-	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
+	buffer := t.Buffer
+	selection := t.Selection
 
+	termbox.Clear(color["default"], color["default"])
+
+	// Debug
 	tso := strconv.Itoa(t.Selection.Offset)
 	tbo := strconv.Itoa(t.Buffer.Offset)
 	th := strconv.Itoa(t.Height)
-	t.Print(0, 0, termbox.ColorWhite, termbox.ColorDefault, "Selection Offset: " + tso + ", Buffer Offset: " + tbo + ", Terminal Height: " + th)
+	bcy := strconv.Itoa(buffer.commandY)
+	t.Print(0, 0, color["white"], color["default"], "Selection Offset: " + tso + ", Buffer Offset: " + tbo + ", Terminal Height: " + th + ", Command Y: " + bcy)
 
-	for i := t.Buffer.Offset; i < len(commandHistory); i++ {
+	// コマンド履歴表示開始位置から順にコマンド履歴を表示する
+	// indexはコマンド履歴配列の添字, buffer.Offsetを初期値とする
+	// commandYはコマンドの表示場所
+	// selection.Offsetはコマンド履歴を選択している表示位置
+	// commandIndexはコマンド全体
+	for i := buffer.Offset; i < len(commandHistory); i++ {
 		command := commandHistory[i]
-		if y + t.Buffer.Offset == t.Selection.Offset {
-			t.PrintSelection(0, y, termbox.ColorWhite | termbox.AttrUnderline, termbox.ColorMagenta, command)
+		commandIndex := buffer.commandY + buffer.Offset
+
+		if commandIndex == selection.Offset {
+			t.PrintSelection(0, buffer.commandY, style["selectionFg"], style["selectionBg"], command)
 		} else {
-			t.Print(0, y, termbox.ColorWhite, termbox.ColorDefault, command)
+			t.Print(0, buffer.commandY, style["fg"], style["bg"], command)
 		}
-		y++
+		buffer.commandY++
 	}
 	termbox.Flush()
+	buffer.ClearCommandY()
 }
 
 func (t *Termbox) Print(x, y int, fg, bg termbox.Attribute, msg string) {

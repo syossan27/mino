@@ -34,7 +34,14 @@ func (h *History) Load() ([]string, error) {
 		return nil, err
 	}
 
-	return commandHistory, nil
+	// コマンド履歴を最新から表示するため逆順にする
+	var reverseCommandHistory []string
+	for i := len(commandHistory) - 1; i > 0; i-- {
+		command := commandHistory[i]
+		reverseCommandHistory = append(reverseCommandHistory, command)
+	}
+
+	return reverseCommandHistory, nil
 }
 
 func (h History) getHistoryFilePath() (string, error) {
