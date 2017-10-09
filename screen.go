@@ -123,6 +123,11 @@ loop:
 				t.Selection.ClearIndex()
 				t.Buffer.ClearOffset()
 			case termbox.KeyEnter:
+				if len(t.Selection.Selected) == 0 {
+					continue
+				}
+
+				break loop
 			default:
 				if ev.Ch != 0 {
 					t.Filter.Append(ev.Ch)

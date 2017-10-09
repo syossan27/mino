@@ -16,6 +16,7 @@ var (
 type Config struct {
 	ShellType string
 	HistoryFilePath string
+	ConfigFilePath string
 }
 
 func NewConfig() *Config {
@@ -37,7 +38,21 @@ func NewConfig() *Config {
 		panic("config.tomlのデコードに失敗")
 	}
 
+	if config.HistoryFilePath == "" {
+		panic("Error: コマンド履歴ファイルの設定がありません")
+	}
+
 	config.HistoryFilePath, err = homedir.Expand(config.HistoryFilePath)
+	if err != nil {
+		panic("homedirが含まれている場合の処理に失敗")
+	}
+
+	// 設定ファイルの指定がない場合、早期リターン
+	if config.ConfigFilePath == "" {
+		return &config
+	}
+
+	config.ConfigFilePath, err = homedir.Expand(config.ConfigFilePath)
 	if err != nil {
 		panic("homedirが含まれている場合の処理に失敗")
 	}
