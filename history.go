@@ -11,12 +11,24 @@ var (
 	zshRegExp = regexp.MustCompile(`:\s[0-9]*:[0-9]*;`)
 )
 
-type History struct {
-	ShellType string
-	HistoryFilePath string
-}
+type (
+	History struct {
+		ShellType string
+		HistoryFilePath string
+	}
 
-func (h *History) Load() ([]string, error) {
+	// Index: コマンド履歴配列の添字
+	// （検索条件で再生成した際に元の添字を知るのに必要）
+	// Content: コマンド文字列
+	// FilterIndex: 検索に引っかかった位置
+	Command struct {
+		Index 		int
+		Content 	string
+		FilterIndex int
+	}
+)
+
+func (h *History) Load() ([]Command, error) {
 	// historyファイルのパスが設定されているなら、その値を使用する
 	// 設定されていない場合には、それぞれのshellのデフォルトのパスを使用する
 	if h.HistoryFilePath == "" {
@@ -34,14 +46,7 @@ func (h *History) Load() ([]string, error) {
 		return nil, err
 	}
 
-	// コマンド履歴を最新から表示するため逆順にする
-	var reverseCommandHistory []string
-	for i := len(commandHistory) - 1; i > 0; i-- {
-		command := commandHistory[i]
-		reverseCommandHistory = append(reverseCommandHistory, command)
-	}
-
-	return reverseCommandHistory, nil
+	return commandHistory, nil
 }
 
 func (h History) getHistoryFilePath() (string, error) {
@@ -60,7 +65,7 @@ func (h History) getHistoryFilePath() (string, error) {
 	return historyFilePath, nil
 }
 
-func (h History) decodeHistoryFile() ([]string, error) {
+func (h History) decodeHistoryFile() ([]Command, error) {
 	// コマンド履歴一覧を返す
 	var commandHistory []string
 
@@ -72,13 +77,22 @@ func (h History) decodeHistoryFile() ([]string, error) {
 
 	scanner := bufio.NewScanner(fp)
 	for scanner.Scan() {
-		// zsh対応
-		scanText := zshRegExp.ReplaceAllString(scanner.Text(), "")
-		commandHistory = append(commandHistory, scanText)
+		command := zshRegExp.ReplaceAllString(scanner.Text(), "") // zsh対応
+		commandHistory = append(commandHistory, command)
 	}
 	if err := scanner.Err(); err != nil {
 		panic(err)
 	}
 
-	return commandHistory, nil
+	// コマンド履歴を最新から表示するため逆順にする
+	var reverseCommandHistory []Command
+	for i := len(commandHistory) - 1; i >= 0; i-- {
+		command := Command {
+			Index: i,
+			Content: commandHistory[i],
+		}
+		reverseCommandHistory = append(reverseCommandHistory, command)
+	}
+
+	return reverseCommandHistory, nil
 }

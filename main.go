@@ -13,7 +13,7 @@ func main() {
 	config := NewConfig()
 
 	// History構造体を生成
-	h := History{
+	h := History {
 		ShellType: config.ShellType,
 		HistoryFilePath: config.HistoryFilePath,
 	}
@@ -27,10 +27,10 @@ func main() {
 	}
 
 	// Termboxの表示
-	t := NewTermbox()
+	t := NewTermbox(commandHistory)
 	err = t.Init()
 	if err != nil {
 		panic("termboxのinitializeに失敗")
 	}
-	t.Do(commandHistory)
+	t.Display()
 }
