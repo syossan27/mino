@@ -3,6 +3,7 @@ package main
 import (
 	"strconv"
 	"github.com/nsf/termbox-go"
+	"github.com/mattn/go-runewidth"
 )
 
 type (
@@ -121,6 +122,7 @@ loop:
 				// 位置関係を初期化
 				t.Selection.ClearIndex()
 				t.Buffer.ClearOffset()
+			case termbox.KeyEnter:
 			default:
 				if ev.Ch != 0 {
 					t.Filter.Append(ev.Ch)
@@ -227,14 +229,16 @@ func (t *Termbox) Draw() {
 func (t *Termbox) Print(x, y int, fg, bg termbox.Attribute, msg string) {
 	for _, c := range msg {
 		termbox.SetCell(x, y, c, fg, bg)
-		x++
+		width := runewidth.RuneWidth(c)
+		x = x + width
 	}
 }
 
 func (t *Termbox) PrintFullWidth(x, y int, fg, bg termbox.Attribute, msg string) {
 	for _, c := range msg {
 		termbox.SetCell(x, y, c, fg, bg)
-		x++
+		width := runewidth.RuneWidth(c)
+		x = x + width
 	}
 
 	// 横幅いっぱいに背景色を表示する

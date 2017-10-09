@@ -78,6 +78,7 @@ func (h History) decodeHistoryFile() ([]Command, error) {
 	scanner := bufio.NewScanner(fp)
 	for scanner.Scan() {
 		command := zshRegExp.ReplaceAllString(scanner.Text(), "") // zsh対応
+		command = parseNonAscii([]byte(command))
 		commandHistory = append(commandHistory, command)
 	}
 	if err := scanner.Err(); err != nil {
@@ -91,8 +92,34 @@ func (h History) decodeHistoryFile() ([]Command, error) {
 			Index: i,
 			Content: commandHistory[i],
 		}
+
 		reverseCommandHistory = append(reverseCommandHistory, command)
 	}
 
 	return reverseCommandHistory, nil
+}
+
+func parseNonAscii(latin1Byte []byte) string {
+	isMarking := false
+	var byteBuffer []byte
+
+	for _, codePoint := range latin1Byte {
+		// 131は0x83の10進数表現
+		if codePoint == 131 {
+			isMarking = true
+			continue
+		}
+
+		if isMarking {
+			// 6bit目を反転させるために
+			// 0x20をXORする
+			invertCodePoint := codePoint ^ 32
+			byteBuffer = append(byteBuffer, invertCodePoint)
+			isMarking = false
+		} else {
+			byteBuffer = append(byteBuffer, codePoint)
+		}
+	}
+
+	return string(byteBuffer)
 }
