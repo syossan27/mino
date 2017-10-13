@@ -1,7 +1,7 @@
 # Mino
 
 ## Overview
-Mino makes macros easily.
+Mino make macro easily.
 
 ## Demo
 
