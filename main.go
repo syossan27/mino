@@ -1,45 +1,54 @@
 package main
 
 import (
-	"github.com/mitchellh/go-homedir"
+	"errors"
 	"os"
-	"fmt"
+
+	"github.com/mitchellh/go-homedir"
+	"github.com/constabulary/gb/testdata/src/h"
 )
 
 var (
 	homeDirPath, _ = homedir.Dir()
 )
 
+const (
+	// ExitCodeOK is exit code for OK
+	ExitCodeOK = iota
+	// ExitCodeError is exit code for Error
+	ExitCodeError
+)
+
 func main() {
 	// 引数の確認
 	argsLength := len(os.Args)
 	if argsLength != 2 {
-		fmt.Println("引数の数が間違っています")
-		os.Exit(1)
+		Fatal(errors.New("missing argument"))
 	}
 
 	// 設定ファイル読み込み
-	config := NewConfig()
+	config, err := NewConfig()
+	if err != nil {
+		Fatal(err)
+	}
 
 	// History構造体を生成
-	h := History {
-		ShellType: config.ShellType,
+	h := History{
+		ShellType:       config.ShellType,
 		HistoryFilePath: config.HistoryFilePath,
 	}
 
 	// historyファイルを読み込み、コマンド履歴を受け取る
 	commandHistory, err := h.Load()
 	if err != nil {
-		// エラー表示
-		// historyファイルの読み込みが大前提なので、exitさせる
-		panic("historyファイルの読み込み失敗")
+		Fatal(err)
 	}
 
 	// Termboxの表示
 	t := NewTermbox(commandHistory)
 	err = t.Init()
 	if err != nil {
-		panic("termboxのinitializeに失敗")
+		Fatal(errors.New("failed initialize termbox"))
 	}
 	t.Display()
 
@@ -47,5 +56,7 @@ func main() {
 	macroName := os.Args[1]
 	macro := NewMacro(macroName, t.Selection, config.ShellType, config.ConfigFilePath)
 	macro.SaveFile()
-	fmt.Println("Create Macro!!")
+	Success("Create Macro!")
+
+	os.Exit(ExitCodeOK)
 }

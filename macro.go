@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"os"
+	"github.com/pkg/errors"
 )
 
 var (
@@ -35,10 +36,10 @@ func NewMacro(name string, s Selection, shellType string, configFilePath string)
 	}
 }
 
-func (m *Macro) SaveFile() {
+func (m *Macro) SaveFile() error {
 	if !existMacroDir() {
 		// macroディレクトリが無かった場合のエラー
-		panic("Error: macroディレクトリがない")
+		return errors.New("not found macro directory")
 	}
 
 	content := m.getFileHeader()
@@ -46,6 +47,8 @@ func (m *Macro) SaveFile() {
 		 content = content + info.Command + "\n"
 	}
 	ioutil.WriteFile(filepath.Join(configMacroDirPath, m.Name + ".sh"), []byte(content), os.ModePerm)
+
+	return nil
 }
 
 func existMacroDir() bool {

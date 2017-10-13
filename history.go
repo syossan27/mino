@@ -1,9 +1,10 @@
 package main
 
-import(
-	"path/filepath"
-	"os"
+import (
 	"bufio"
+	"errors"
+	"os"
+	"path/filepath"
 	"regexp"
 )
 
@@ -60,6 +61,8 @@ func (h History) getHistoryFilePath() (string, error) {
 		historyFilePath = filepath.Join(homeDirPath, ".zsh_history")
 	case "fish":
 		historyFilePath = filepath.Join(homeDirPath, ".bash_history")
+	default:
+		return string(nil), errors.New("invalid shell type")
 	}
 
 	return historyFilePath, nil
@@ -71,7 +74,7 @@ func (h History) decodeHistoryFile() ([]Command, error) {
 
 	fp, err := os.Open(h.HistoryFilePath)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	defer fp.Close()
 
@@ -82,7 +85,7 @@ func (h History) decodeHistoryFile() ([]Command, error) {
 		commandHistory = append(commandHistory, command)
 	}
 	if err := scanner.Err(); err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	// コマンド履歴を最新から表示するため逆順にする
