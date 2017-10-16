@@ -24,10 +24,10 @@ type (
 	}
 )
 
-func NewMacro(name string, s Selection, shellType string, configFilePath string) *Macro {
-	selectedInfo := s.Selected
+func NewMacro(selection Selection, shellType string, configFilePath string) *Macro {
+	selectedInfo := selection.Selected
 	return &Macro {
-		Name: name,
+		Name: os.Args[1],
 		Info: selectedInfo,
 		Shell: Shell {
 			Type: shellType,

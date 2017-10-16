@@ -29,6 +29,13 @@ type (
 	}
 )
 
+func NewHistory(shellType, historyFilePath string) History {
+	return History {
+		ShellType: shellType,
+		HistoryFilePath: historyFilePath,
+	}
+}
+
 func (h *History) Load() ([]Command, error) {
 	// historyファイルのパスが設定されているなら、その値を使用する
 	// 設定されていない場合には、それぞれのshellのデフォルトのパスを使用する
@@ -62,7 +69,7 @@ func (h History) getHistoryFilePath() (string, error) {
 	case "fish":
 		historyFilePath = filepath.Join(homeDirPath, ".bash_history")
 	default:
-		return string(nil), errors.New("invalid shell type")
+		return "", errors.New("invalid shell type")
 	}
 
 	return historyFilePath, nil

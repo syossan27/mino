@@ -1,18 +1,20 @@
 package main
 
 import (
+	"errors"
 	"strconv"
-	"github.com/nsf/termbox-go"
+
 	"github.com/mattn/go-runewidth"
+	"github.com/nsf/termbox-go"
 )
 
 type (
 	Termbox struct {
-		Width int
-		Height int
-		SearchFormHeight int
+		Width                int
+		Height               int
+		SearchFormHeight     int
 		CommandHistoryHeight int
-		CommandHistory []Command
+		Commands             []Command
 		Selection
 		Buffer
 		Filter
@@ -49,19 +51,19 @@ var (
 	}
 )
 
-func NewTermbox(commandHistory []Command) *Termbox {
+func NewTermbox(commands []Command) *Termbox {
 	return &Termbox{
 		Selection: NewSelection(),
-		Buffer: NewBuffer(len(commandHistory)),
-		Filter: NewFilter(),
-		CommandHistory: commandHistory,
+		Buffer:    NewBuffer(len(commands)),
+		Filter:    NewFilter(),
+		Commands:  commands,
 	}
 }
 
 func (t *Termbox) Init() error {
 	err := termbox.Init()
 	if err != nil {
-		return err
+		return errors.New("failed initialize termbox")
 	}
 
 	return nil
@@ -154,7 +156,7 @@ func (t *Termbox) SetSize() {
 func (t *Termbox) Draw() {
 	termbox.Clear(color["default"], color["default"])
 
-	commandHistory := t.CommandHistory
+	commandHistory := t.Commands
 
 	// 検索フォームの表示
 	displaySearchForm := "QUERY>"
@@ -164,7 +166,7 @@ func (t *Termbox) Draw() {
 	// 検索条件がある場合、検索条件に合致するコマンド履歴一覧を生成する
 	// コマンド履歴配列が変更されるため、内部バッファのサイズも更新
 	if len(t.Filter.SearchQuery) != 0 {
-		commandHistory = t.Filter.FilterResult(t.CommandHistory)
+		commandHistory = t.Filter.FilterResult(t.Commands)
 		t.Buffer.Size = len(commandHistory)
 	}
 
