@@ -1,7 +1,10 @@
 package main
 
 import (
+	"os"
+
 	"github.com/mitchellh/go-homedir"
+	"github.com/urfave/cli"
 )
 
 var (
@@ -13,35 +16,27 @@ const (
 )
 
 func main() {
-	// 引数の確認
-	err := ValidateArgs()
-	if err != nil {
-		Fatal(err)
+	app := makeApp()
+	app.Run(os.Args)
+}
+
+func makeApp() *cli.App {
+	app := cli.NewApp()
+
+	app.Name = "mino"
+	app.Usage = "Make macro easily"
+	app.Version = "0.0.1"
+
+	app.Action = ExecMacro
+
+	app.Commands = []cli.Command{
+		{
+			Name:    "create",
+			Aliases: []string{"c"},
+			Usage:   "create macro",
+			Action:  CreateMacro,
+		},
 	}
 
-	// 設定ファイル読み込み
-	config, err := NewConfig()
-	if err != nil {
-		Fatal(err)
-	}
-
-	// historyファイルを読み込み、コマンド履歴を受け取る
-	history := NewHistory(config.ShellType, config.HistoryFilePath)
-	commands, err := history.Load()
-	if err != nil {
-		Fatal(err)
-	}
-
-	// Termboxの表示
-	t := NewTermbox(commands)
-	err = t.Init()
-	if err != nil {
-		Fatal(err)
-	}
-	t.Display()
-
-	// マクロ生成
-	macro := NewMacro(t.Selection, config.ShellType, config.ConfigFilePath)
-	macro.SaveFile()
-	Success("Create Macro!")
+	return app
 }
