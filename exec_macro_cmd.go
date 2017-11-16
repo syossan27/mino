@@ -23,7 +23,7 @@ func ExecMacro(c *cli.Context) error {
 	}
 
 	// マクロの実行
-	out, err := exec.Command(config.ShellType, "-c", "'" + filepath.Join(configMacroDirPath, macro + ".sh") +  "'").Output()
+	out, err := exec.Command(config.ShellType, "-c", "source "+filepath.Join(configMacroDirPath, macro+".sh")).Output()
 	if err != nil {
 		panic(err)
 	}
